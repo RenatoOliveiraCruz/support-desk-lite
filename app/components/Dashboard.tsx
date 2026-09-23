@@ -1,6 +1,7 @@
- "use client";
+"use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 
 type Status = "OPEN" | "IN_PROGRESS" | "RESOLVED";
 type Priority = "LOW" | "MEDIUM" | "HIGH";
@@ -18,13 +19,13 @@ type Ticket = {
 const statusLabel: Record<Status, string> = {
   OPEN: "Aberto",
   IN_PROGRESS: "Em andamento",
-  RESOLVED: "Resolvido"
+  RESOLVED: "Resolvido",
 };
 
 const priorityLabel: Record<Priority, string> = {
   LOW: "Baixa",
   MEDIUM: "Média",
-  HIGH: "Alta"
+  HIGH: "Alta",
 };
 
 export default function Dashboard() {
@@ -42,7 +43,9 @@ export default function Dashboard() {
       if (!response.ok) throw new Error("Falha ao carregar chamados");
       setTickets(await response.json());
     } catch {
-      setError("Não foi possível carregar os chamados. Confira o banco de dados.");
+      setError(
+        "Não foi possível carregar os chamados. Confira o banco de dados.",
+      );
     } finally {
       setLoading(false);
     }
@@ -57,19 +60,20 @@ export default function Dashboard() {
     setSaving(true);
     setError("");
 
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const payload = {
       title: String(form.get("title")),
       description: String(form.get("description")),
       customer: String(form.get("customer")),
-      priority: String(form.get("priority"))
+      priority: String(form.get("priority")),
     };
 
     try {
       const response = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -77,7 +81,7 @@ export default function Dashboard() {
         throw new Error(data?.error ?? "Falha ao criar chamado");
       }
 
-      event.currentTarget.reset();
+      formElement.reset();
       await loadTickets();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro inesperado");
@@ -90,7 +94,7 @@ export default function Dashboard() {
     const response = await fetch(`/api/tickets/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status }),
     });
 
     if (response.ok) await loadTickets();
@@ -98,15 +102,16 @@ export default function Dashboard() {
   }
 
   const visibleTickets = useMemo(
-    () => filter === "ALL" ? tickets : tickets.filter((t) => t.status === filter),
-    [tickets, filter]
+    () =>
+      filter === "ALL" ? tickets : tickets.filter((t) => t.status === filter),
+    [tickets, filter],
   );
 
   const counters = {
     total: tickets.length,
     open: tickets.filter((t) => t.status === "OPEN").length,
     progress: tickets.filter((t) => t.status === "IN_PROGRESS").length,
-    resolved: tickets.filter((t) => t.status === "RESOLVED").length
+    resolved: tickets.filter((t) => t.status === "RESOLVED").length,
   };
 
   return (
@@ -115,7 +120,10 @@ export default function Dashboard() {
         <div>
           <span className="eyebrow">SUPPORT DESK LITE</span>
           <h1>Central de chamados</h1>
-          <p>Mini sistema full stack com Next.js, TypeScript, React, Prisma e PostgreSQL.</p>
+          <p>
+            Sistema full stack com Next.js, TypeScript, React, Prisma e
+            PostgreSQL.
+          </p>
         </div>
         <div className="stack">Next.js · TypeScript · PostgreSQL</div>
       </header>
@@ -143,11 +151,19 @@ export default function Dashboard() {
             </label>
             <label>
               Título
-              <input name="title" placeholder="Ex.: Sistema não abre" required />
+              <input
+                name="title"
+                placeholder="Ex.: Sistema não abre"
+                required
+              />
             </label>
             <label>
               Descrição
-              <textarea name="description" placeholder="Descreva o problema..." required />
+              <textarea
+                name="description"
+                placeholder="Descreva o problema..."
+                required
+              />
             </label>
             <label>
               Prioridade
@@ -157,7 +173,9 @@ export default function Dashboard() {
                 <option value="HIGH">Alta</option>
               </select>
             </label>
-            <button disabled={saving}>{saving ? "Salvando..." : "Criar chamado"}</button>
+            <button disabled={saving}>
+              {saving ? "Salvando..." : "Criar chamado"}
+            </button>
           </form>
         </div>
 
@@ -167,7 +185,10 @@ export default function Dashboard() {
               <span className="eyebrow">OPERAÇÃO</span>
               <h2>Chamados recentes</h2>
             </div>
-            <select value={filter} onChange={(e) => setFilter(e.target.value as "ALL" | Status)}>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as "ALL" | Status)}
+            >
               <option value="ALL">Todos</option>
               <option value="OPEN">Abertos</option>
               <option value="IN_PROGRESS">Em andamento</option>
@@ -189,7 +210,9 @@ export default function Dashboard() {
                       <strong>{ticket.title}</strong>
                       <span>{ticket.customer}</span>
                     </div>
-                    <span className={`priority ${ticket.priority.toLowerCase()}`}>
+                    <span
+                      className={`priority ${ticket.priority.toLowerCase()}`}
+                    >
                       {priorityLabel[ticket.priority]}
                     </span>
                   </div>
@@ -200,7 +223,9 @@ export default function Dashboard() {
                     </span>
                     <select
                       value={ticket.status}
-                      onChange={(e) => updateStatus(ticket.id, e.target.value as Status)}
+                      onChange={(e) =>
+                        updateStatus(ticket.id, e.target.value as Status)
+                      }
                     >
                       <option value="OPEN">Aberto</option>
                       <option value="IN_PROGRESS">Em andamento</option>
