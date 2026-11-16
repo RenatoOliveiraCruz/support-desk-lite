@@ -35,8 +35,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const allowedPriorities = ["LOW", "MEDIUM", "HIGH"];
-    if (priority && !allowedPriorities.includes(priority)) {
+    const allowedPriorities = ["LOW", "MEDIUM", "HIGH"] as const;
+    if (
+      priority !== undefined &&
+      (typeof priority !== "string" ||
+        !allowedPriorities.includes(priority as (typeof allowedPriorities)[number]))
+    ) {
       return NextResponse.json({ error: "Prioridade inválida." }, { status: 400 });
     }
 
@@ -45,7 +49,7 @@ export async function POST(request: Request) {
         title: cleanTitle,
         description: cleanDescription,
         customer: cleanCustomer,
-        priority: priority ?? "MEDIUM"
+        priority: (priority as (typeof allowedPriorities)[number] | undefined) ?? "MEDIUM"
       }
     });
 
